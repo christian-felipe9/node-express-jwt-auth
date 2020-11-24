@@ -18,14 +18,25 @@ const handleErrors = err => {
 			errors[properties.path] = properties.message;
 		});
 	}
+
+	//incorrect email
+	if (err.message === 'Incorrect E-mail') {
+		errors['email'] = 'That E-mail is not Registered';
+	}
+
+	//incorrect password
+	if (err.message === 'Incorrect Password') {
+		errors['password'] = 'That Password is Icorrect';
+	}
+
 	return errors;
 };
 
-const createToken = (id) => {
+const createToken = id => {
 	return jwt.sign({ id }, jwtConfig.SECRET, {
-		expiresIn: jwtConfig.MAX_AGE
-	})
-}
+		expiresIn: jwtConfig.MAX_AGE,
+	});
+};
 
 module.exports.signup_get = (req, res) => {
 	res.render('signup');
@@ -43,9 +54,11 @@ module.exports.signup_post = async (req, res) => {
 
 		const token = !!user ? createToken(user._id) : '';
 
-		res.cookie('jwt-auth', token, { httpOnly: true, maxAge: cookieConfig.MAX_AGE });
+		res.cookie('jwt-auth', token, {
+			httpOnly: true,
+			maxAge: cookieConfig.MAX_AGE,
+		});
 		res.status(201).json({ user: user._id });
-		
 	} catch (ex) {
 		let errors = handleErrors(ex);
 		res.status(400).json({ errors });
@@ -56,5 +69,19 @@ module.exports.signup_post = async (req, res) => {
 
 module.exports.login_post = async (req, res) => {
 	const { email, password } = req.body;
-	res.send('user login');
+
+	try {
+		const user = await User.login(email, password);
+		const token = !!user ? createToken(user._id) : '';
+
+		res.cookie('jwt-auth', token, {
+			httpOnly: true,
+			maxAge: cookieConfig.MAX_AGE,
+		});
+
+		res.status(200).json({ user: user._id });
+	} catch (ex) {
+		const errors = handleErrors(ex);
+		res.status(400).json({ errors });
+	}
 };
