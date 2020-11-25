@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
+const { mongoDB } = require('./config');
+const { requireAuth } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -14,8 +16,7 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 
 // database connection
-const dbURI =
-	'mongodb+srv://Christian:christian001@cluster.qxk0k.gcp.mongodb.net/node-auth';
+const dbURI = mongoDB.URI;
 mongoose
 	.connect(dbURI, {
 		useNewUrlParser: true,
@@ -27,7 +28,8 @@ mongoose
 
 // routes
 app.get('/', (req, res) => res.render('home'));
-app.get('/smoothies', (req, res) => res.render('smoothies'));
+
+app.get('/smoothies', requireAuth, (req, res) => res.render('smoothies'));
 
 app.use(authRoutes);
 
