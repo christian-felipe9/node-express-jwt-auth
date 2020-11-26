@@ -33,15 +33,30 @@ app.get('/smoothies', requireAuth, (req, res) => res.render('smoothies'));
 
 app.use(authRoutes);
 
+//use jquery js as static route
+app.use('/scripts', express.static(__dirname + '/node_modules/jquery/dist/'));
+
+//use pagination js as static route
+app.use(
+	'/scripts',
+	express.static(__dirname + '/node_modules/paginationjs/dist/')
+);
+
+//use pagination css as static route
+app.use(express.static(__dirname + '/node_modules/paginationjs/dist/'));
+
 // cookies
 app.get('/set-cookies', (req, res) => {
 	//res.setHeader('Set-Cookie', 'newUser=true');
 	res.cookie('newUser', false);
-	res.cookie('isEmployee', true, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true });
+	res.cookie('isEmployee', true, {
+		maxAge: 1000 * 60 * 60 * 24,
+		httpOnly: true,
+	});
 	res.send('New cookie was setted');
-})
+});
 
 app.get('/get-cookies', (req, res) => {
 	const cookies = req.cookies;
 	res.json(cookies);
-})
+});

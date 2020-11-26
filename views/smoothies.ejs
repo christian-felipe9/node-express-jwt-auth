@@ -33,4 +33,42 @@
   </li>
 </ul>
 
+
+<div id="data-container"></div>
+<div class="paginationjs paginationjs-theme-yellow" id="pagination-container"></div>
+
+<script>
+$(function() {
+  (function(name) {
+    var container = $('#pagination-container');
+    container.pagination({
+      dataSource: {
+        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+      },
+      locator: 'data',
+      autoHidePrevious: true,
+      autoHideNext: true,
+      pageSize: 2,
+      ajax: {
+        beforeSend: function() {
+          container.prev().html('Loading data ...');
+        }
+      },
+      callback: function(response, pagination) {
+        window.console && console.log(22, response, pagination);
+        var dataHtml = '<ul>';
+
+        $.each(response, function (index, item) {
+          dataHtml += '<li>' + item + '</li>';
+        });
+
+        dataHtml += '</ul>';
+
+        container.prev().html(dataHtml);
+      }
+    })
+  })('container');
+});
+</script>
+
 <%- include('partials/footer'); -%>
