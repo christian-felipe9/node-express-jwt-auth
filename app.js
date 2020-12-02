@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
 const { mongoDB } = require('./config');
-const { requireAuth } = require('./middleware/authMiddleware');
+const { requireAuth, checkUser } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -26,13 +26,6 @@ mongoose
 	.then(result => app.listen(3000))
 	.catch(err => console.log(err));
 
-// routes
-app.get('/', (req, res) => res.render('home'));
-
-app.get('/smoothies', requireAuth, (req, res) => res.render('smoothies'));
-
-app.use(authRoutes);
-
 //use jquery js as static route
 app.use('/scripts', express.static(__dirname + '/node_modules/jquery/dist/'));
 
@@ -44,6 +37,30 @@ app.use(
 
 //use pagination css as static route
 app.use(express.static(__dirname + '/node_modules/paginationjs/dist/'));
+
+app.use((req, res, next) => {
+	res.set(
+		'Cache-Control',
+		'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+	);
+	next();
+});
+
+// routes
+app.get('*', checkUser);
+
+app.get('/', (req, res) => res.render('home'));
+
+app.get('/smoothies', requireAuth, (req, res) => {
+	// res.set(
+	// 	'Cache-Control',
+	// 	'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+	// );
+	res.render('smoothies');
+});
+
+//use routes from authRoutes
+app.use(authRoutes);
 
 // cookies
 app.get('/set-cookies', (req, res) => {
